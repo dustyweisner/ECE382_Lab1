@@ -14,6 +14,6 @@ will store into memory "0x26". The first word is the first operand, the second b
 
   Next I will make the flowchart of operations and how I plan to implement the program. I will start with a demonstration in the Raptor program. 
   
-[]!
+![](https://github.com/dustyweisner/ECE382_Lab1/blob/master/Flowchart.GIF?raw)
   
   I used all values as they would be in the assembly programming. I first asked for inputs as part of the functionality of Raptor, and when I enter 55 (symbolizing "0x55") the input loop exited. Then the program, with all the stored words, asked which operation was used by starting with the second word (assuming that the first word is not a CLR_OP or END_OP, which will be fixed in the actual implementation of the design in assembly programming) and looking at the operands before and after the word. Then the required calculation or operation will be stored within each loop through the instructions. After the calculation, all words that were calculated will go through a test to see if the words are greater than "0xFF" (250 - decimal). If they are, the value will change to "0x00". When the END_OP is reached, the program will exit the calculation loop. The rest of the Raptor program was used 
