@@ -8,6 +8,7 @@
 ;
 ;
 ;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
             .cdecls C,LIST,"msp430.h"       ; Include device header file
 
 ;-------------------------------------------------------------------------------
@@ -18,7 +19,8 @@
                                             ; that have references to current
                                             ; section
 
-myProgram: 		.byte						0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xDD, 0x44, 0x08, 0x22, 0x09, 0x44, 0xFF, 0x22, 0xFD, 0x55                                          ; section
+myProgram: 		.byte		0x11, 0x11, 0x11, 0x11, 0x11, 0x44, 0x22, 0x22, 0x22, 0x11, 0xCC, 0x55                                          ; section
+
 ADD_OP:			.equ		0x11
 SUB_OP:			.equ		0x22
 MUL_OP:			.equ		0x33
@@ -53,28 +55,33 @@ Addition:			cmp		#ADD_OP, r10
 					jnz		Subtraction
 
 					add.b	@r9, r11
-
-					jmp		Overflow
+					cmp		#0x0001, r2
+					jnz		Store
+					mov.w	#0x00FF, r11
+					jmp		Store
 
 Subtraction:		cmp		#SUB_OP, r10
 					jnz		Multiplication
-					cmp		r9, r7
-					mov.b	r2, r7
-					jmp		Overflow
+					mov.b	@r9, r7
+					sub.w	r7, r11
+					cmp		#0x0004, r2
+					jnz		Store
+					mov.w	#0x0000, r11
+					jmp		Store
 
 Multiplication:		cmp		#MUL_OP, r10
 					jnz		Clear
 					mov.b	#0x33, r11
-					jmp		Overflow
+					jmp		Store
 
 Clear:				cmp		#CLR_OP, r10
 					jnz		End
-					mov.b	#0x00, r11
-					jmp		Store
+					mov.b	#0x00, 0(r6)
+					mov.b	@r9, r11
+					inc		r6
+					mov.w	r9, r7
+					jmp		Setters
 
-Overflow:			cmp		#0x0001, r2
-					jne		Store
-					mov.w	#0x00FF, r11
 Store:				mov.b	r11, 0(r6)
 					inc		r6
 					mov.w	r9, r7
