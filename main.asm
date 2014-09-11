@@ -18,7 +18,7 @@
                                             ; that have references to current
                                             ; section
 
-myProgram: 		.byte		0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xDD, 0x44, 0x08, 0x22, 0x09, 0x44, 0xFF, 0x22, 0xFD, 0x55                 ; section
+myProgram: 		.byte		0x22, 0x11, 0x22, 0x22, 0x33, 0x33, 0x08, 0x44, 0x08, 0x22, 0x09, 0x44, 0xff, 0x11, 0xff, 0x44, 0xcc, 0x33, 0x02, 0x33, 0x00, 0x44, 0x33, 0x33, 0x08, 0x55                 ; section
 
 ADD_OP:			.equ		0x11
 SUB_OP:			.equ		0x22
@@ -70,7 +70,25 @@ Subtraction:		cmp		#SUB_OP, r10
 
 Multiplication:		cmp		#MUL_OP, r10
 					jnz		Clear
-					mov.b	#0x33, r11
+					mov.b	r11, r10
+					mov.w	#0x000, r11						;reset r11 for multiplication shifts
+					mov.b	@r9, r8
+					mov.w	#0x0001, r12
+					mov.w	r12, r13
+
+Shiftadd:			cmp		#0x0009, r12					;makes the loop go through only 8 times
+					jz		Overflow						;if at 9th loop, go store the answer after overflow
+					and		r13, r8							;find the bit of the second operand
+					cmp		#0x0000, r8						;see if the bit is 0 or 1
+					jz		Shift							;skip the add if 0
+		 			add.w	r10, r11						;add to value
+Shift:				rla.w	r10								;shift the first operand to the left
+					mov.b	@r9, r8							;restore second operand
+					add.b	r13, r13						;doubles to go through the bits
+					inc.b	r12
+					jmp		Shiftadd
+
+
 					jmp		Store
 
 Clear:				cmp		#CLR_OP, r10
@@ -81,6 +99,9 @@ Clear:				cmp		#CLR_OP, r10
 					mov.w	r9, r7
 					jmp		Setters
 
+Overflow:			cmp		#0x00FF, r11
+					jn		Store
+					mov.w	#0x00FF, r11
 Store:				mov.b	r11, 0(r6)
 					inc		r6
 					mov.w	r9, r7
